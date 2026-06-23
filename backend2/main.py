@@ -17,6 +17,8 @@ app = FastAPI(
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://103.176.78.208",        # kalau akses lewat Nginx port 80 (tanpa port)
+    "http://103.176.78.208:3000",   # kalau masih akses langsung ke port 3000 Next.js
 ]
 
 app.add_middleware(
