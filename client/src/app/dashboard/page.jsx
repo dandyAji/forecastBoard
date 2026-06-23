@@ -34,12 +34,24 @@ function formatRelativeDate(dateString) {
     return date.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function getGreeting() {
+function getGreeting(userName) {
     const hour = new Date().getHours();
-    if (hour < 11) return "Selamat pagi";
-    if (hour < 15) return "Selamat siang";
-    if (hour < 18) return "Selamat sore";
-    return "Selamat malam, Fadilah Yunisyah";
+    let greeting = "Selamat malam";
+    if (hour < 11) greeting = "Selamat pagi";
+    else if (hour < 15) greeting = "Selamat siang";
+    else if (hour < 18) greeting = "Selamat sore";
+
+    return userName ? `${greeting}, ${userName}` : greeting;
+}
+
+function getCurrentUser() {
+    if (typeof window === "undefined") return null;
+    try {
+        const raw = localStorage.getItem("user");
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
 }
 
 export default function HomePage() {
@@ -54,7 +66,10 @@ export default function HomePage() {
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
 
+    const [currentUser, setCurrentUser] = useState(null);
+
     useEffect(() => {
+        setCurrentUser(getCurrentUser());
         fetchData();
     }, []);
 
@@ -120,7 +135,7 @@ export default function HomePage() {
                     <div className="p-4 lg:p-8 max-w-7xl mx-auto">
                         {/* ── Greeting ───────────────────────────────────────────── */}
                         <div className="mb-8 fade-in">
-                            <h2 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-pink-600 bg-clip-text text-transparent mb-1">{getGreeting()} 👋</h2>
+                            <h2 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-pink-600 bg-clip-text text-transparent mb-1">{getGreeting(currentUser?.name)} 👋</h2>
                             <p className="text-slate-500 dark:text-slate-400 text-sm">Ini ringkasan aktivitas peramalan Anda.</p>
                         </div>
 
@@ -200,9 +215,7 @@ export default function HomePage() {
                                                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-pink-100 dark:from-blue-900/40 dark:to-pink-900/40 flex items-center justify-center text-lg flex-shrink-0">📈</div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 mb-0.5">
-                                                        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
-                                                            {fc.title} {fc.still_process ? "true" : "false"} -
-                                                        </h4>
+                                                        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{fc.title}</h4>
                                                         <StatusBadge status={fc.still_process} />
                                                     </div>
                                                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{fc.description || "-"}</p>
