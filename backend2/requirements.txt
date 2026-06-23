@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+psycopg2-binary
+python-dotenv
+pandas
+openpyxl
+python-multipart
+statsmodels
+xgboost
+scikit-learn
+bcrypt
+python-jose[cryptography]
