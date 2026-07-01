@@ -215,7 +215,7 @@ export default function TabHasil({ data }) {
             <div className="p-5 rounded-2xl border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-800/40">
                 <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">💡 Kesimpulan</h4>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    <strong className={winnerColor}>{winnerName}</strong> menghasilkan performa lebih baik dari {loserName} pada metrik utama — MAPE lebih rendah <strong className={winnerColor}>{mapeDiff.toFixed(2)}%</strong>, RMSE lebih rendah <strong className={winnerColor}>{rmsePctDiff.toFixed(1)}%</strong>, dan MAE lebih rendah <strong className={winnerColor}>{maeDiff.toFixed(2)}</strong>.{" "}
+                    <strong className={winnerColor}>{winnerName}</strong> menghasilkan performa lebih baik dari {loserName} pada metrik utama — MAPE lebih rendah <strong className={winnerColor}>{mapeDiff.toFixed(2)}%</strong>, RMSE lebih rendah <strong className={winnerColor}>{rmsePctDiff.toFixed(1)}</strong>, dan MAE lebih rendah <strong className={winnerColor}>{maeDiff.toFixed(2)}</strong>.{" "}
                     {xgbWinsMape ? "XGBoost mampu menangkap pola non-linear dari fitur lag dan fitur kalender (hari kerja, musiman)." : "SARIMA lebih unggul menangkap pola musiman dan tren dari data time series ini."} {loserName} tetap relevan sebagai <em>baseline</em> pembanding yang mudah diinterpretasi.
                 </p>
             </div>

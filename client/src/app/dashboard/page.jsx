@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AppSidebar } from "@/components/layout/sidebar";
-import { getForecastList, createForecast } from "@/services/forecastService";
+import { getForecastList, createForecast, deleteForecast } from "@/services/forecastService";
 
 const STATUS_STYLES = {
     completed: { label: "Selesai", dot: "bg-emerald-500", badge: "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400" },
@@ -65,6 +65,7 @@ export default function HomePage() {
     const [fileError, setFileError] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
+    const [deleteId, setDeleteId] = useState(null);
 
     const [currentUser, setCurrentUser] = useState(null);
 
@@ -125,6 +126,25 @@ export default function HomePage() {
             setSubmitting(false);
         }
     };
+
+    const handleDelete = async (id) => {
+        if (!id) return;
+        if (!confirm("Apakah Anda yakin ingin menghapus forecast ini? Tindakan ini tidak dapat dibatalkan.")) return;
+        try {
+            await deleteForecast(id);
+            setDeleteId(null);
+            await fetchData(); // refresh list dari server setelah delete berhasil
+        } catch (err) {
+            console.log(err);
+            alert("Gagal menghapus forecast.");
+        }
+
+        console.log("Hapus forecast dengan ID:", id);
+    };
+
+    useEffect(() => {
+        if (deleteId) handleDelete(deleteId);
+    }, [deleteId]);
 
     return (
         <>
@@ -225,7 +245,7 @@ export default function HomePage() {
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation();
-                                                        // setDeleteId(fc.id);
+                                                        setDeleteId(fc.id);
                                                     }}
                                                     className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex-shrink-0"
                                                     aria-label="Hapus forecast"

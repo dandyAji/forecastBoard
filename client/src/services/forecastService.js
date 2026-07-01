@@ -39,3 +39,8 @@ export async function getForecastDetail(id) {
     const { data } = await api.get(`/forecast/${id}`);
     return data;
 }
+
+export async function deleteForecast(id) {
+    const { data } = await api.delete(`/forecast/${id}`);
+    return data;
+}
