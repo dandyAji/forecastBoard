@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, UploadFile, Form, File, HTTPException, BackgroundTasks
 from typing import Optional
-from sqlmodel import Session, select, or_, cast, String
+from sqlmodel import Session, select, delete, cast, String
 from app.db.session import get_session
 from app.core.security import get_current_user
 from app.services.forecast_header_service import (
@@ -10,7 +10,7 @@ from app.services.forecast_header_service import (
 )
 from app.services.forecasting_service import run_all_forecasts
 from app.models.forecast_header import ForecastHeader
-from app.services.forecast_header_service import get_forecast_list_service, get_forecast_service, get_forecast_matrix_service, get_one_forecast_service
+from app.services.forecast_header_service import get_forecast_list_service, get_forecast_service, get_forecast_matrix_service, get_one_forecast_service, delete_forecast_service
 
 
 router = APIRouter(prefix="/api/v1", tags=["forecast"])
@@ -109,7 +109,38 @@ def get_actual_forecast(
         "data": actual_data,
     }
 
-
+@router.delete("/forecast/{forecast_id}", status_code=200)
+def delete_forecast(
+    forecast_id: str,
+    session: Session = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
+):
+    """Delete forecast by ID"""
+    try:
+        user_id = current_user["sub"]
+        
+        result = delete_forecast_service(
+            session=session,
+            forecast_id=forecast_id,
+            user_id=user_id,
+        )
+        
+        if result["status"] == "error":
+            raise HTTPException(
+                status_code=result["code"],
+                detail=result["message"]
+            )
+        
+        return {
+            "message": result["message"],
+            "data": result["data"],
+        }
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 # create forecast
 @router.post("/forecast", status_code=201)
 def create_sarima_forecast(

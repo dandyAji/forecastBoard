@@ -2,12 +2,16 @@ import numpy as np
 import pandas as pd
 from io import BytesIO
 from typing import Optional
-from sqlmodel import Session, select, or_, cast, String
+from sqlmodel import Session, select, or_, cast, String, delete, text
 from fastapi import UploadFile
 from app.models.forecast_header import ForecastHeader
 from app.models.forecast_detail import ForecastDetail
 from app.models.forecast_matrix import ForecastMatrix
 from app.models.transaction import TransactionData
+import logging
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 
 def parse_transaction_file(file_bytes: bytes, filename: str) -> pd.DataFrame:
@@ -145,3 +149,64 @@ def get_data_actual_service(session: Session, forecast_id: str, user_id: str):
         )
     )
     return session.exec(query).all()
+
+def delete_forecast_service(
+    session: Session,
+    forecast_id: str,
+    user_id: str,
+):
+    """Delete forecast dan semua data terkait (transactions, detail, matrix)"""
+    try:
+        # Validasi kepemilikan forecast
+        header = session.exec(
+            select(ForecastHeader).where(
+                ForecastHeader.id == forecast_id,
+                ForecastHeader.userId == user_id,
+            )
+        ).first()
+
+        if not header:
+            return {
+                "status": "error",
+                "message": "Forecast not found or unauthorized",
+                "code": 404,
+            }
+
+        title = header.title
+
+        # Hapus semua child records dulu (FK constraint)
+        session.exec(
+            delete(TransactionData).where(TransactionData.HeaderId == forecast_id)
+        )
+        session.exec(
+            delete(ForecastDetail).where(ForecastDetail.headerId == forecast_id)
+        )
+        session.exec(
+            delete(ForecastMatrix).where(ForecastMatrix.headerId == forecast_id)
+        )
+        session.exec(
+            delete(ForecastHeader).where(ForecastHeader.id == forecast_id)
+        )
+
+        session.commit()
+        logger.info(f"Successfully deleted forecast {forecast_id}")
+
+        return {
+            "status": "success",
+            "message": "Success delete data",
+            "code": 200,
+            "data": {
+                "id": forecast_id,
+                "title": title,
+                "deleted_at": datetime.now().isoformat(),
+            },
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to delete forecast: {str(e)}", exc_info=True)
+        session.rollback()
+        return {
+            "status": "error",
+            "message": f"Gagal menghapus forecast: {str(e)}",
+            "code": 400,
+        }
